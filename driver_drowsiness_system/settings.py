@@ -1,4 +1,5 @@
 import os
+import ssl
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -85,62 +86,64 @@ CHANNEL_LAYERS = {
 }
 
 # Database configuration: MySQL (via DATABASE_URL or individual env vars) with SQLite fallback
-if os.environ.get('DATABASE_URL'):
-    db_url = os.environ.get('DATABASE_URL')
-    try:
-        import dj_database_url
-        database_config = dj_database_url.config(conn_max_age=600, conn_health_checks=True)
-    except ImportError:
-        import urllib.parse
-        parsed = urllib.parse.urlparse(db_url)
-        engine = 'django.db.backends.mysql' if parsed.scheme in ('mysql', 'mysql2') else 'django.db.backends.sqlite3'
-        database_config = {
-            'ENGINE': engine,
-            'NAME': parsed.path.lstrip('/'),
-            'USER': parsed.username or '',
-            'PASSWORD': urllib.parse.unquote(parsed.password or ''),
-            'HOST': parsed.hostname or 'localhost',
-            'PORT': parsed.port or 3306,
-            'CONN_MAX_AGE': 600,
-            'OPTIONS': {},
-        }
-    if database_config.get('ENGINE') == 'django.db.backends.mysql':
-        options = database_config.setdefault('OPTIONS', {})
-        options['charset'] = 'utf8mb4'
-        # PyMySQL requires 'ssl' to be a dict or SSLContext, not string 'ssl-mode'
-        ssl_mode = options.pop('ssl-mode', None) or options.pop('sslmode', None) or os.environ.get('MYSQL_SSL')
-        if ssl_mode or os.environ.get('MYSQL_SSL_CA') or 'ssl-mode=REQUIRED' in db_url:
-            import ssl
-            options['ssl'] = ssl.create_default_context()
-    DATABASES = {
-        'default': database_config,
-    }
-elif os.environ.get('MYSQL_DATABASE') or os.environ.get('DB_NAME'):
-    mysql_options = {'charset': 'utf8mb4'}
-    if os.environ.get('MYSQL_SSL', 'false').lower() in ('true', '1', 'yes') or os.environ.get('DB_SSL', 'false').lower() in ('true', '1', 'yes'):
-        import ssl
-        mysql_options['ssl'] = ssl.create_default_context()
+def configure_databases():
+    db_url = os.environ.get('DATABASE_URL', '').strip()
 
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.mysql',
-            'NAME': os.environ.get('MYSQL_DATABASE') or os.environ.get('DB_NAME'),
-            'USER': os.environ.get('MYSQL_USER') or os.environ.get('DB_USER', 'root'),
-            'PASSWORD': os.environ.get('MYSQL_PASSWORD') or os.environ.get('DB_PASSWORD', ''),
-            'HOST': os.environ.get('MYSQL_HOST') or os.environ.get('DB_HOST', 'localhost'),
-            'PORT': os.environ.get('MYSQL_PORT') or os.environ.get('DB_PORT', '3306'),
-            'CONN_MAX_AGE': 600,
-            'CONN_HEALTH_CHECKS': True,
-            'OPTIONS': mysql_options,
+    # 1. Try parsing DATABASE_URL if provided and free of unreplaced template brackets (<...>)
+    if db_url and not ('<' in db_url or '>' in db_url):
+        try:
+            import dj_database_url
+            database_config = dj_database_url.parse(db_url, conn_max_age=600, conn_health_checks=True)
+            if database_config.get('ENGINE') == 'django.db.backends.mysql':
+                options = database_config.setdefault('OPTIONS', {})
+                options['charset'] = 'utf8mb4'
+                # PyMySQL requires 'ssl' to be a dict or SSLContext, not string 'ssl-mode'
+                ssl_mode = options.pop('ssl-mode', None) or options.pop('sslmode', None) or os.environ.get('MYSQL_SSL')
+                if ssl_mode or os.environ.get('MYSQL_SSL_CA') or 'ssl-mode=REQUIRED' in db_url or 'tidbcloud.com' in db_url:
+                    options['ssl'] = ssl.create_default_context()
+            return {'default': database_config}
+        except Exception as e:
+            print(f"[WARNING] Could not parse DATABASE_URL ({e}). Checking individual MySQL variables...")
+
+    # 2. Check for individual MySQL environment variables (e.g. TiDB, Aiven, RDS)
+    mysql_host = os.environ.get('MYSQL_HOST') or os.environ.get('DB_HOST')
+    mysql_db = os.environ.get('MYSQL_DATABASE') or os.environ.get('DB_NAME') or os.environ.get('MYSQL_DB')
+    if mysql_host:
+        raw_port = os.environ.get('MYSQL_PORT') or os.environ.get('DB_PORT', '4000' if 'tidbcloud' in mysql_host else '3306')
+        try:
+            port = int(raw_port)
+        except (ValueError, TypeError):
+            port = 4000 if 'tidbcloud' in mysql_host else 3306
+
+        mysql_options = {'charset': 'utf8mb4'}
+        if os.environ.get('MYSQL_SSL', 'true').lower() in ('true', '1', 'yes') or 'tidbcloud' in mysql_host:
+            mysql_options['ssl'] = ssl.create_default_context()
+
+        return {
+            'default': {
+                'ENGINE': 'django.db.backends.mysql',
+                'NAME': mysql_db or 'sys',
+                'USER': os.environ.get('MYSQL_USER') or os.environ.get('DB_USER', 'root'),
+                'PASSWORD': os.environ.get('MYSQL_PASSWORD') or os.environ.get('DB_PASSWORD', ''),
+                'HOST': mysql_host,
+                'PORT': port,
+                'CONN_MAX_AGE': 600,
+                'CONN_HEALTH_CHECKS': True,
+                'OPTIONS': mysql_options,
+            }
         }
-    }
-else:
-    DATABASES = {
+
+    if db_url and ('<' in db_url or '>' in db_url):
+        print("[WARNING] DATABASE_URL contains placeholder '<...>' characters! Using SQLite fallback for build.")
+
+    return {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
             'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
+
+DATABASES = configure_databases()
 
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
