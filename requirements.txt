@@ -1,0 +1,12 @@
+Django==4.2.29
+channels==4.3.2
+asgiref==3.11.1
+numpy==1.26.4
+opencv-python==4.9.0.80
+scipy==1.11.3
+mediapipe==0.10.9
+daphne==4.1.2
+whitenoise==6.8.2
+dj-database-url==2.3.0
+psycopg[binary]==3.2.3
+PyMySQL==1.1.1

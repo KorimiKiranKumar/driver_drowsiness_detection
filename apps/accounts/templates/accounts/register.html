@@ -1,0 +1,195 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Register - Driver Drowsiness Detection{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/auth.css' %}">
+{% endblock %}
+
+{% block header %}{% endblock %}
+{% block footer %}{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper">
+    <div class="auth-card" style="max-width: 600px;">
+        <div class="auth-header">
+            <div class="auth-logo" style="background: linear-gradient(135deg, var(--accent-green), var(--accent-blue)); box-shadow: 0 8px 16px rgba(74, 222, 128, 0.3);">
+                <i class="fas fa-user-plus"></i>
+            </div>
+            <h1 class="auth-title">Create Account</h1>
+            <p class="auth-subtitle">Join us for a safer driving experience</p>
+        </div>
+
+        <div class="auth-body">
+            <form method="post" action="{% url 'accounts:register' %}">
+                {% csrf_token %}
+                
+                {% if form.non_field_errors %}
+                <div class="auth-alert">
+                    <i class="fas fa-exclamation-circle"></i>
+                    {% for error in form.non_field_errors %}
+                    <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="id_first_name" class="auth-label">First Name</label>
+                            <div class="auth-input-group {% if form.first_name.errors %}border-danger{% endif %}">
+                                <input type="text" class="auth-input" id="id_first_name" name="first_name" 
+                                       placeholder="First name" value="{{ form.first_name.value|default:'' }}" required>
+                                <i class="fas fa-user auth-input-icon"></i>
+                            </div>
+                            {% if form.first_name.errors %}<small class="text-danger smaller">{{ form.first_name.errors.0 }}</small>{% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="id_last_name" class="auth-label">Last Name</label>
+                            <div class="auth-input-group {% if form.last_name.errors %}border-danger{% endif %}">
+                                <input type="text" class="auth-input" id="id_last_name" name="last_name" 
+                                       placeholder="Last name" value="{{ form.last_name.value|default:'' }}" required>
+                                <i class="fas fa-user auth-input-icon"></i>
+                            </div>
+                            {% if form.last_name.errors %}<small class="text-danger smaller">{{ form.last_name.errors.0 }}</small>{% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="id_username" class="auth-label">Username</label>
+                            <div class="auth-input-group {% if form.username.errors %}border-danger{% endif %}">
+                                <input type="text" class="auth-input" id="id_username" name="username" 
+                                       placeholder="Username" value="{{ form.username.value|default:'' }}" required>
+                                <i class="fas fa-at auth-input-icon"></i>
+                            </div>
+                            {% if form.username.errors %}<small class="text-danger smaller">{{ form.username.errors.0 }}</small>{% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="id_phone" class="auth-label">Phone Number</label>
+                            <div class="auth-input-group {% if form.phone.errors %}border-danger{% endif %}">
+                                <input type="text" class="auth-input" id="id_phone" name="phone" 
+                                       placeholder="+1234567890" value="{{ form.phone.value|default:'' }}">
+                                <i class="fas fa-phone auth-input-icon"></i>
+                            </div>
+                            {% if form.phone.errors %}<small class="text-danger smaller">{{ form.phone.errors.0 }}</small>{% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="id_email" class="auth-label">Email Address</label>
+                    <div class="auth-input-group {% if form.email.errors %}border-danger{% endif %}">
+                        <input type="email" class="auth-input" id="id_email" name="email" 
+                               placeholder="Enter your email" value="{{ form.email.value|default:'' }}" required>
+                        <i class="fas fa-envelope auth-input-icon"></i>
+                    </div>
+                    {% if form.email.errors %}<small class="text-danger smaller">{{ form.email.errors.0 }}</small>{% endif %}
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="id_password1" class="auth-label">Password</label>
+                            <div class="auth-input-group {% if form.password1.errors %}border-danger{% endif %}">
+                                <input type="password" class="auth-input" id="id_password1" name="password1" 
+                                       placeholder="Password" required>
+                                <i class="fas fa-lock auth-input-icon"></i>
+                                <button class="password-toggle" type="button" id="togglePassword1">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            {% if form.password1.errors %}<small class="text-danger smaller">{{ form.password1.errors.0 }}</small>{% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="id_password2" class="auth-label">Confirm Password</label>
+                            <div class="auth-input-group {% if form.password2.errors %}border-danger{% endif %}">
+                                <input type="password" class="auth-input" id="id_password2" name="password2" 
+                                       placeholder="Confirm" required>
+                                <i class="fas fa-lock auth-input-icon"></i>
+                                <button class="password-toggle" type="button" id="togglePassword2">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            {% if form.password2.errors %}<small class="text-danger smaller">{{ form.password2.errors.0 }}</small>{% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" id="terms" name="terms" required style="width: 1.25em; height: 1.25em; border-radius: 4px;">
+                        <label class="form-check-label text-light opacity-75 small ms-2" for="terms">
+                            I agree to the <a href="#" class="auth-link">Terms</a> and <a href="#" class="auth-link">Privacy</a>
+                        </label>
+                    </div>
+                </div>
+                
+                <button type="submit" class="auth-btn" style="background: linear-gradient(135deg, var(--accent-green), var(--accent-blue));">
+                    Create Account
+                </button>
+                
+                <div class="auth-divider">
+                    <span>or</span>
+                </div>
+                
+                <div class="text-center">
+                    <p class="mb-0 small text-white opacity-75">
+                        Already have an account? 
+                        <a href="{% url 'accounts:login' %}" class="auth-link">Sign in here</a>
+                    </p>
+                </div>
+            </form>
+        </div>
+        
+        <div class="auth-footer">
+            <p class="mb-0 x-small">&copy; 2026 Driver Drowsiness System</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Toggle password visibility for password1
+    document.getElementById('togglePassword1').addEventListener('click', function() {
+        const password = document.getElementById('password1');
+        const icon = this.querySelector('i');
+        
+        if (password.type === 'password') {
+            password.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            password.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    });
+    
+    // Toggle password visibility for password2
+    document.getElementById('togglePassword2').addEventListener('click', function() {
+        const password = document.getElementById('password2');
+        const icon = this.querySelector('i');
+        
+        if (password.type === 'password') {
+            password.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            password.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    });
+</script>
+{% endblock %}

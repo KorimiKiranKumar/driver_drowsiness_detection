@@ -1,0 +1,177 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Control Hub - Drowsiness AI{% endblock %}
+
+{% block content %}
+<div class="container py-5 animate-up">
+    <!-- Welcome Section -->
+    <div class="hero-section mb-5">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <span class="badge bg-primary px-3 py-2 rounded-pill mb-3">AI Monitoring System Active</span>
+                <h1 class="display-4 fw-bold mb-3">Neural Dashboard</h1>
+                <p class="lead text-muted mb-4">Welcome back, <span class="text-white">{{ user.username }}</span>. Your safety protocols are primed and ready for operation.</p>
+                <div class="d-flex gap-3">
+                    <a href="{% url 'detection:monitor' %}" class="btn btn-primary btn-lg shadow-glow">
+                        <i class="fas fa-video me-2"></i>Initialize Scanner
+                    </a>
+                    <a href="{% url 'detection:results' %}" class="btn btn-outline-primary btn-lg">
+                        <i class="fas fa-chart-bar me-2"></i>Analysis Hub
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-4 text-center d-none d-lg-block">
+                <div class="stat-icon bg-primary mx-auto" style="width: 200px; height: 200px; font-size: 5rem; animation: pulse-glow 3s infinite;">
+                    <i class="fas fa-brain"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row g-4 mb-5">
+        <div class="col-xl-3 col-md-6">
+            <div class="stat-card p-4 h-100">
+                <div class="stat-icon bg-danger mb-3">
+                    <i class="fas fa-bolt"></i>
+                </div>
+                <h3 class="fw-bold mb-1">{{ total_events|default:0 }}</h3>
+                <p class="text-muted small uppercase mb-0">Total Interventions</p>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6">
+            <div class="stat-card p-4 h-100">
+                <div class="stat-icon bg-primary mb-3">
+                    <i class="fas fa-network-wired"></i>
+                </div>
+                <h3 class="fw-bold mb-1">{{ total_sessions|default:0 }}</h3>
+                <p class="text-muted small uppercase mb-0">Active Sessions</p>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6">
+            <div class="stat-card p-4 h-100">
+                <div class="stat-icon bg-warning mb-3">
+                    <i class="fas fa-bell"></i>
+                </div>
+                <h3 class="fw-bold mb-1">{{ total_alerts|default:0 }}</h3>
+                <p class="text-muted small uppercase mb-0">Security Alerts</p>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6">
+            <div class="stat-card p-4 h-100">
+                <div class="stat-icon bg-success mb-3">
+                    <i class="fas fa-shield-check"></i>
+                </div>
+                <h3 class="fw-bold mb-1">{{ safety_score|default:100 }}%</h3>
+                <p class="text-muted small uppercase mb-0">Neural Safety Score</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="row g-4">
+        <!-- Recent Logs -->
+        <div class="col-lg-8">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span><i class="fas fa-terminal text-primary me-2"></i>Live System Pulse</span>
+                    <span class="badge bg-success-glow">Core Stable</span>
+                </div>
+                <div class="card-body">
+                    <div class="timeline-compact">
+                        <div class="d-flex gap-4 p-3 mb-3 border-bottom border-white border-opacity-5">
+                            <div class="text-success mt-1"><i class="fas fa-check-circle"></i></div>
+                            <div>
+                                <h6 class="mb-0 fw-bold">Protocols Synchronized</h6>
+                                <p class="text-muted small mb-0">Security handshake completed with detection engine.</p>
+                            </div>
+                        </div>
+                        <div class="d-flex gap-4 p-3 mb-3 border-bottom border-white border-opacity-5">
+                            <div class="text-info mt-1"><i class="fas fa-camera"></i></div>
+                            <div>
+                                <h6 class="mb-0 fw-bold">Optic Stream Ready</h6>
+                                <p class="text-muted small mb-0">High-definition visual feed available for initialization.</p>
+                            </div>
+                        </div>
+                        <div class="d-flex gap-4 p-3">
+                            <div class="text-primary mt-1"><i class="fas fa-atom"></i></div>
+                            <div>
+                                <h6 class="mb-0 fw-bold">Neural Engine v3.0</h6>
+                                <p class="text-muted small mb-0">AI processing unit calibrated and online.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Access -->
+        <div class="col-lg-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <i class="fas fa-compass text-primary me-2"></i>Navigation Hub
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-3">
+                        <a href="{% url 'reports:reports' %}" class="quick-link-item p-3">
+                            <div class="icon-wrap bg-primary"><i class="fas fa-file-signature"></i></div>
+                            <div class="ms-3">
+                                <div class="fw-bold">Registry</div>
+                                <div class="small text-muted">Historical session logs</div>
+                            </div>
+                        </a>
+                        <a href="{% url 'accounts:profile' %}" class="quick-link-item p-3">
+                            <div class="icon-wrap bg-info"><i class="fas fa-user-shield"></i></div>
+                            <div class="ms-3">
+                                <div class="fw-bold">Bio Profile</div>
+                                <div class="small text-muted">User authentication details</div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .quick-link-item {
+        display: flex;
+        align-items: center;
+        text-decoration: none;
+        color: white;
+        background: rgba(255, 255, 255, 0.02);
+        border-radius: 15px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        transition: all 0.3s ease;
+    }
+    .quick-link-item:hover {
+        background: rgba(255, 255, 255, 0.07);
+        transform: translateY(-3px);
+        border-color: var(--primary-glow);
+    }
+    .icon-wrap {
+        width: 45px;
+        height: 45px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+    }
+    .bg-success-glow {
+        background: rgba(0, 255, 136, 0.1);
+        color: #00ff88;
+        border: 1px solid rgba(0, 255, 136, 0.2);
+    }
+    @keyframes pulse-glow {
+        0% { filter: drop-shadow(0 0 10px rgba(0, 242, 255, 0.2)); }
+        50% { filter: drop-shadow(0 0 30px rgba(0, 242, 255, 0.5)); }
+        100% { filter: drop-shadow(0 0 10px rgba(0, 242, 255, 0.2)); }
+    }
+</style>
+{% endblock %}

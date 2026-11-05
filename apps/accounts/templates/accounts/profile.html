@@ -1,0 +1,183 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Neural Profile - Drowsiness AI{% endblock %}
+
+{% block content %}
+<div class="container py-5 animate-up">
+    <!-- Page Header -->
+    <div class="page-header mb-5">
+        <h2>Neural Profile</h2>
+        <p>Calibrate your personal identity and monitor your system-wide safety contributions.</p>
+        <div class="mt-4">
+            <a href="{% url 'detection:dashboard' %}" class="btn btn-outline-primary">
+                <i class="fas fa-arrow-left me-2"></i>Return to Hub
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Profile Identity Card -->
+        <div class="col-lg-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <i class="fas fa-fingerprint text-primary me-2"></i>Biometric Identity
+                </div>
+                <div class="card-body text-center p-5">
+                    <div class="avatar-container mb-4">
+                        <div class="stat-icon bg-primary mx-auto" style="width: 120px; height: 120px; font-size: 3.5rem;">
+                            <i class="fas fa-user-astronaut"></i>
+                        </div>
+                    </div>
+                    <h3 class="fw-bold mb-1 text-white">{{ user.get_full_name|default:user.username }}</h3>
+                    <p class="text-primary mb-4">@{{ user.username }}</p>
+                    
+                    <div class="d-grid gap-3 text-start">
+                        <div class="metric-card p-3 d-flex align-items-center">
+                            <i class="fas fa-envelope text-primary me-3"></i>
+                            <div>
+                                <small class="text-muted d-block uppercase">Network Address</small>
+                                <span class="small fw-bold">{{ user.email }}</span>
+                            </div>
+                        </div>
+                        <div class="metric-card p-3 d-flex align-items-center">
+                            <i class="fas fa-calendar-alt text-primary me-3"></i>
+                            <div>
+                                <small class="text-muted d-block uppercase">Initialization Date</small>
+                                <span class="small fw-bold">{{ user.date_joined|date:"M d, Y" }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Configuration Settings -->
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-user-cog text-primary me-2"></i>Neural Configuration
+                </div>
+                <div class="card-body">
+                    <form method="post" action="{% url 'accounts:profile' %}">
+                        {% csrf_token %}
+                        
+                        {% if messages %}
+                        {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"></button>
+                        </div>
+                        {% endfor %}
+                        {% endif %}
+                        
+                        <div class="row g-4 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label text-muted small uppercase mb-2">Alpha Designation</label>
+                                <input type="text" class="form-control" name="first_name" value="{{ user.first_name }}" placeholder="First Name">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label text-muted small uppercase mb-2">Beta Designation</label>
+                                <input type="text" class="form-control" name="last_name" value="{{ user.last_name }}" placeholder="Last Name">
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="form-label text-muted small uppercase mb-2">Primary Uplink</label>
+                            <input type="email" class="form-control" name="email" value="{{ user.email }}" placeholder="Email Address">
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="form-label text-muted small uppercase mb-2">Mobile Transponder</label>
+                            <input type="tel" class="form-control" name="phone" value="{{ user.profile.phone|default:'' }}" placeholder="Phone Number">
+                        </div>
+                        
+                        <div class="mb-5">
+                            <label class="form-label text-muted small uppercase mb-2">Neural Brief</label>
+                            <textarea class="form-control" name="bio" rows="4" placeholder="Brief biographical signature...">{{ user.profile.bio|default:'' }}</textarea>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between align-items-center">
+                            <button type="submit" class="btn btn-primary px-5">
+                                <i class="fas fa-save me-2"></i>Sync Profile
+                            </button>
+                            <a href="{% url 'accounts:logout' %}" class="btn btn-outline-danger">
+                                <i class="fas fa-power-off me-2"></i>Terminate Session
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Grid -->
+    <div class="row g-4 mt-4">
+        <div class="col-xl-3 col-md-6">
+            <div class="stat-card p-4">
+                <div class="stat-icon bg-primary mb-3">
+                    <i class="fas fa-layer-group"></i>
+                </div>
+                <h3 class="fw-bold mb-1">{{ total_sessions|default:0 }}</h3>
+                <p class="text-muted small uppercase mb-0">Total Sessions</p>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="stat-card p-4">
+                <div class="stat-icon bg-success mb-3">
+                    <i class="fas fa-hourglass-half"></i>
+                </div>
+                <h3 class="fw-bold mb-1">{{ total_duration|default:0 }}</h3>
+                <p class="text-muted small uppercase mb-0">Total Minutes</p>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="stat-card p-4">
+                <div class="stat-icon bg-warning mb-3">
+                    <i class="fas fa-exclamation-circle"></i>
+                </div>
+                <h3 class="fw-bold mb-1">{{ total_alerts|default:0 }}</h3>
+                <p class="text-muted small uppercase mb-0">Total Alerts</p>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="stat-card p-4">
+                <div class="stat-icon bg-info mb-3">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h3 class="fw-bold mb-1">{{ safety_score|default:0 }}%</h3>
+                <p class="text-muted small uppercase mb-0">Safety Integrity</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Navigation Matrix -->
+    <div class="card mt-5">
+        <div class="card-header">
+            <i class="fas fa-th text-primary me-2"></i>Quick Access Matrix
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <a href="{% url 'detection:monitor' %}" class="btn btn-outline-primary w-100 py-3">
+                        <i class="fas fa-video d-block mb-2 fs-4"></i>Monitor
+                    </a>
+                </div>
+                <div class="col-md-4">
+                    <a href="{% url 'reports:reports' %}" class="btn btn-outline-primary w-100 py-3">
+                        <i class="fas fa-file-invoice d-block mb-2 fs-4"></i>Registry
+                    </a>
+                </div>
+                <div class="col-md-4">
+                    <a href="{% url 'reports:charts' %}" class="btn btn-outline-primary w-100 py-3">
+                        <i class="fas fa-project-diagram d-block mb-2 fs-4"></i>Analytics
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

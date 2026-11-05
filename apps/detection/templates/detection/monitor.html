@@ -1,0 +1,218 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Neural Monitor - Drowsiness AI{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Custom monitor styles */
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5 animate-up">
+    <!-- Header -->
+    <div class="page-header mb-5">
+        <div class="d-flex justify-content-between align-items-end">
+            <div>
+                <div class="status-badge status-badge-primary mb-3" id="cameraStatus">Initializing Neural Link...</div>
+                <h2>Neural Interface</h2>
+                <p class="text-muted mb-0">Real-time biometric surveillance and cognitive state analysis.</p>
+            </div>
+            <div class="text-end">
+                <div class="metric-card p-3">
+                    <small class="text-muted uppercase d-block mb-1">Compute Rate</small>
+                    <span class="h4 mb-0 fw-bold text-white"><span id="totalFrames">0</span> <small class="text-muted fw-normal">FPS</small></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Left: Monitoring Feed -->
+        <div class="col-lg-8">
+            <div class="card p-0 mb-4 overflow-hidden">
+                <div class="video-container position-relative">
+                    <div id="statusBadge" class="status-badge status-normal">CORE STABLE</div>
+                    <canvas id="videoFeed" class="w-100" width="640" height="480"></canvas>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="metric-card p-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div>
+                                <h6 class="mb-1 fw-bold text-white">Eye Aperture</h6>
+                                <small class="text-muted uppercase smaller">EAR Metric Signature</small>
+                            </div>
+                            <span id="earValue" class="h3 mb-0 fw-bold text-primary">0.00</span>
+                        </div>
+                        <div class="progress" style="height: 6px;">
+                            <div id="earProgress" class="progress-bar bg-primary shadow-glow" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="metric-card p-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div>
+                                <h6 class="mb-1 fw-bold text-white">Mouth Aperture</h6>
+                                <small class="text-muted uppercase smaller">MAR Metric Signature</small>
+                            </div>
+                            <span id="marValue" class="h3 mb-0 fw-bold text-info">0.00</span>
+                        </div>
+                        <div class="progress" style="height: 6px;">
+                            <div id="marProgress" class="progress-bar bg-info shadow-glow" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Analytics & Controls -->
+        <div class="col-lg-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-brain text-primary me-2"></i>Neural Intel
+                </div>
+                <div class="card-body">
+                    <div class="row g-3 mb-4">
+                        <div class="col-6">
+                            <div class="metric-card p-3 text-center">
+                                <h3 class="fw-bold mb-1 text-white" id="totalDrowsy">0</h3>
+                                <small class="text-muted uppercase smaller">Neural Blinks</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="metric-card p-3 text-center">
+                                <h3 class="fw-bold mb-1 text-danger" id="totalAlerts">0</h3>
+                                <small class="text-muted uppercase smaller">Interventions</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-3 mb-4">
+                        <div class="metric-card p-3 d-flex justify-content-between align-items-center">
+                            <span class="text-muted small uppercase">Current Pose</span>
+                            <span id="headPoseValue" class="badge bg-primary rounded-pill">STABLE</span>
+                        </div>
+                        
+                        <div class="metric-card p-3 d-flex justify-content-between align-items-center">
+                            <span class="text-muted small uppercase">Cognitive State</span>
+                            <span id="drowsinessLevel" class="text-success fw-bold">VIGILANT</span>
+                        </div>
+                    </div>
+
+                    <div class="pt-3 border-top border-white border-opacity-5">
+                        <label class="text-muted small uppercase mb-3 d-block">Spatial orientation history</label>
+                        <div class="row g-2 mb-2">
+                            <div class="col-4">
+                                <div class="metric-card p-2 text-center border-primary border-opacity-25">
+                                    <span class="d-block fw-bold text-white small" id="countCenter">0</span>
+                                    <small class="text-muted smaller" style="font-size: 0.6rem;">Front</small>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="metric-card p-2 text-center">
+                                    <span class="d-block fw-bold text-white small" id="countUp">0</span>
+                                    <small class="text-muted smaller" style="font-size: 0.6rem;">Up</small>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="metric-card p-2 text-center">
+                                    <span class="d-block fw-bold text-danger small" id="countDown">0</span>
+                                    <small class="text-muted smaller" style="font-size: 0.6rem;">Down</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <div class="metric-card p-2 text-center">
+                                    <span class="d-block fw-bold text-white small" id="countLeft">0</span>
+                                    <small class="text-muted smaller" style="font-size: 0.6rem;">Left</small>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="metric-card p-2 text-center">
+                                    <span class="d-block fw-bold text-white small" id="countRight">0</span>
+                                    <small class="text-muted smaller" style="font-size: 0.6rem;">Right</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-shield-alt text-primary me-2"></i>System Integrity
+                </div>
+                <div class="card-body">
+                    <div class="d-flex flex-column gap-3">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="status-indicator bg-success"></div>
+                            <span class="small text-muted">AI Core: <span class="text-white">OPERATIONAL</span></span>
+                        </div>
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="status-indicator bg-success"></div>
+                            <span class="small text-muted">Stream Sync: <span class="text-white">OPTIMIZED</span></span>
+                        </div>
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="status-indicator bg-success"></div>
+                            <span class="small text-muted">Neural Guard: <span class="text-white">ACTIVE</span></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex gap-3">
+                <button id="startBtn" class="btn btn-primary btn-lg flex-grow-1 shadow-glow">
+                    <i class="fas fa-play me-2"></i>Link Start
+                </button>
+                <button id="stopBtn" class="btn btn-outline-danger btn-lg flex-grow-1" disabled>
+                    <i class="fas fa-power-off me-2"></i>Disconnect
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Alert Overlay -->
+<div id="alertOverlay" class="alert-overlay">
+    <div class="alert-content">
+        <div class="alert-icon-ring mb-4">
+            <i class="fas fa-radiation"></i>
+        </div>
+        <h1 class="display-3 fw-black mb-2 text-glow">NEURAL BREACH</h1>
+        <h3 class="fw-bold mb-4">CRITICAL DROWSINESS DETECTED</h3>
+        <div class="alert-action-bar px-5 py-3">
+            <p class="mb-0 fw-bold">INITIATING EMERGENCY PROTOCOL - STAY ALERT</p>
+        </div>
+    </div>
+</div>
+
+<form id="csrf-form">{% csrf_token %}</form>
+
+<style>
+    .status-indicator {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        box-shadow: 0 0 10px currentColor;
+    }
+    .alert-icon-ring {
+        font-size: 5rem;
+        animation: pulse-ring 1s infinite;
+    }
+    @keyframes pulse-ring {
+        0% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.1); opacity: 0.8; }
+        100% { transform: scale(1); opacity: 1; }
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'detection/js/monitor.js' %}"></script>
+{% endblock %}

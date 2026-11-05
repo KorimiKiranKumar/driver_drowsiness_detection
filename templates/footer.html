@@ -1,0 +1,142 @@
+{% load static %}
+
+<!-- Footer -->
+<footer class="footer mt-auto py-5 border-top border-white border-opacity-5">
+    <div class="container">
+        <div class="row g-4 mb-5">
+            <!-- ABOUT -->
+            <div class="col-lg-4 col-md-6">
+                <div class="d-flex align-items-center mb-4">
+                    <div class="stat-icon bg-primary me-3" style="width: 45px; height: 45px; font-size: 1.2rem;">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <h4 class="mb-0 fw-bold text-white tracking-tight">Drowsiness AI</h4>
+                </div>
+                <p class="text-muted mb-4 pe-lg-5">
+                    Next-generation neural monitoring system designed to maximize road safety through real-time cognitive state analysis. 
+                    Protecting lives with cutting-edge AI.
+                </p>
+                <div class="d-flex gap-3">
+                    <a href="#" class="social-link-glow"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" class="social-link-glow"><i class="fab fa-twitter"></i></a>
+                    <a href="#" class="social-link-glow"><i class="fab fa-linkedin-in"></i></a>
+                    <a href="#" class="social-link-glow"><i class="fab fa-github"></i></a>
+                </div>
+            </div>
+
+            <!-- NAVIGATION -->
+            <div class="col-lg-2 col-md-6">
+                <h6 class="text-uppercase fw-bold mb-4 text-primary small tracking-widest">Interface</h6>
+                <ul class="list-unstyled">
+                    <li class="mb-2">
+                        <a href="{% url 'detection:dashboard' %}" class="footer-link">Dashboard</a>
+                    </li>
+                    <li class="mb-2">
+                        <a href="{% url 'detection:monitor' %}" class="footer-link">Neural Monitor</a>
+                    </li>
+                    <li class="mb-2">
+                        <a href="{% url 'detection:results' %}" class="footer-link">Analysis Hub</a>
+                    </li>
+                    <li class="mb-2">
+                        <a href="{% url 'reports:reports' %}" class="footer-link">System Registry</a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- ACCOUNT -->
+            <div class="col-lg-2 col-md-6">
+                <h6 class="text-uppercase fw-bold mb-4 text-primary small tracking-widest">Account</h6>
+                <ul class="list-unstyled">
+                    <li class="mb-2">
+                        <a href="{% url 'accounts:login' %}" class="footer-link">Network Login</a>
+                    </li>
+                    <li class="mb-2">
+                        <a href="{% url 'accounts:register' %}" class="footer-link">Registry Initialization</a>
+                    </li>
+                    <li class="mb-2">
+                        <a href="{% url 'accounts:profile' %}" class="footer-link">Neural Profile</a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- CONTACT -->
+            <div class="col-lg-4 col-md-6">
+                <h6 class="text-uppercase fw-bold mb-4 text-primary small tracking-widest">Support Node</h6>
+                <ul class="list-unstyled">
+                    <li class="mb-3 d-flex align-items-center">
+                        <div class="icon-wrap-small me-3 text-primary"><i class="fas fa-terminal"></i></div>
+                        <span class="text-muted">uplink@drowsiness.ai</span>
+                    </li>
+                    <li class="mb-3 d-flex align-items-center">
+                        <div class="icon-wrap-small me-3 text-primary"><i class="fas fa-satellite-dish"></i></div>
+                        <span class="text-muted">Secure Line: +1 (888) AI-SAFE-LINK</span>
+                    </li>
+                    <li class="mb-3 d-flex align-items-center">
+                        <div class="icon-wrap-small me-3 text-primary"><i class="fas fa-map-marker-alt"></i></div>
+                        <span class="text-muted">Safety Core, Silicon Valley Delta</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="row align-items-center pt-4 border-top border-white border-opacity-5">
+            <div class="col-md-6 text-center text-md-start">
+                <p class="text-muted small mb-0">
+                    &copy; 2024 Drowsiness Detection System. Neural Engine v4.0.0
+                </p>
+            </div>
+            <div class="col-md-6 text-center text-md-end">
+                <div class="d-inline-flex align-items-center gap-2 px-3 py-1 bg-white bg-opacity-5 rounded-pill border border-white border-opacity-5">
+                    <span class="status-indicator-small bg-success"></span>
+                    <span class="text-muted smaller">Global Safety Grid Active</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<style>
+    .footer-link {
+        color: var(--text-muted);
+        text-decoration: none;
+        transition: all 0.3s ease;
+        display: inline-block;
+        font-size: 0.95rem;
+    }
+    .footer-link:hover {
+        color: var(--primary-glow);
+        transform: translateX(5px);
+    }
+    .social-link-glow {
+        width: 35px;
+        height: 35px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        color: var(--text-muted);
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+    .social-link-glow:hover {
+        background: rgba(0, 242, 255, 0.1);
+        color: var(--primary-glow);
+        border-color: var(--primary-glow);
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0, 242, 255, 0.2);
+    }
+    .icon-wrap-small {
+        width: 24px;
+        text-align: center;
+    }
+    .status-indicator-small {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        display: inline-block;
+        box-shadow: 0 0 8px currentColor;
+    }
+</style>
+

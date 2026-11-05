@@ -1,0 +1,243 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Neural Intelligence - Drowsiness AI{% endblock %}
+
+{% block extra_css %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 py-5 animate-up">
+    <!-- Page Header -->
+    <div class="page-header mb-5">
+        <h2>Neural Intelligence</h2>
+        <p>Advanced predictive analytics visualizing fatigue patterns and biometric safety trends.</p>
+        <div class="mt-4">
+            <a href="{% url 'reports:reports' %}" class="btn btn-outline-primary">
+                <i class="fas fa-arrow-left me-2"></i>Return to Registry
+            </a>
+        </div>
+    </div>
+    
+    <!-- Statistics Cards -->
+    <div class="row g-4 mb-5">
+        <div class="col-xl-3 col-md-6">
+            <div class="stat-card p-4">
+                <div class="stat-icon bg-primary mb-3">
+                    <i class="fas fa-network-wired"></i>
+                </div>
+                <h3 class="fw-bold mb-1">{{ total_sessions }}</h3>
+                <p class="text-muted text-uppercase small mb-0">Total Cycles</p>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6">
+            <div class="stat-card p-4">
+                <div class="stat-icon bg-warning mb-3">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <h3 class="fw-bold mb-1">{{ total_drowsy_events }}</h3>
+                <p class="text-muted text-uppercase small mb-0">Fatigue Detected</p>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6">
+            <div class="stat-card p-4">
+                <div class="stat-icon bg-danger mb-3">
+                    <i class="fas fa-bell"></i>
+                </div>
+                <h3 class="fw-bold mb-1">{{ total_alerts }}</h3>
+                <p class="text-muted text-uppercase small mb-0">Total Interventions</p>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6">
+            <div class="stat-card p-4">
+                <div class="stat-icon bg-success mb-3">
+                    <i class="fas fa-brain"></i>
+                </div>
+                <h3 class="fw-bold mb-1">{{ avg_ear|floatformat:3 }}</h3>
+                <p class="text-muted text-uppercase small mb-0">Avg Neural EAR</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Charts Grid -->
+    <div class="row g-4">
+        <!-- Drowsiness Events Chart -->
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <i class="fas fa-chart-bar text-warning me-2"></i>Fatigue Intensity Timeline
+                </div>
+                <div class="card-body">
+                    <div style="height: 300px;">
+                        <canvas id="drowsinessChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Alerts Chart -->
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <i class="fas fa-wave-square text-danger me-2"></i>Intervention Frequency
+                </div>
+                <div class="card-body">
+                    <div style="height: 300px;">
+                        <canvas id="alertsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Duration Chart -->
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <i class="fas fa-stopwatch text-info me-2"></i>Active Session Distribution
+                </div>
+                <div class="card-body">
+                    <div style="height: 300px;">
+                        <canvas id="durationChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Metrics Chart -->
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-header text-center">
+                    <i class="fas fa-dna text-success me-2"></i>Biometric Distribution
+                </div>
+                <div class="card-body">
+                    <div style="height: 300px;">
+                        <canvas id="metricsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const commonOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { display: false },
+            tooltip: {
+                backgroundColor: 'rgba(5, 11, 26, 0.95)',
+                titleColor: '#00f2ff',
+                bodyColor: '#ffffff',
+                borderColor: 'rgba(255, 255, 255, 0.1)',
+                borderWidth: 1,
+                padding: 12,
+                cornerRadius: 10,
+                displayColors: false
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                grid: { color: 'rgba(255, 255, 255, 0.03)' },
+                ticks: { color: '#64748b', font: { size: 10 } }
+            },
+            x: {
+                grid: { display: false },
+                ticks: { color: '#64748b', font: { size: 10 } }
+            }
+        }
+    };
+
+    const dates = {{ dates|default:'[]'|safe }};
+    const drowsyEvents = {{ drowsy_events|default:'[]'|safe }};
+    const alertsData = {{ alerts|default:'[]'|safe }};
+    const durations = {{ durations|default:'[]'|safe }};
+    
+    // Drowsiness Events Chart
+    new Chart(document.getElementById('drowsinessChart'), {
+        type: 'bar',
+        data: {
+            labels: dates,
+            datasets: [{
+                data: drowsyEvents,
+                backgroundColor: 'rgba(255, 204, 0, 0.2)',
+                borderColor: '#ffcc00',
+                borderWidth: 2,
+                borderRadius: 5,
+                barThickness: 15
+            }]
+        },
+        options: commonOptions
+    });
+    
+    // Alerts Chart
+    new Chart(document.getElementById('alertsChart'), {
+        type: 'line',
+        data: {
+            labels: dates,
+            datasets: [{
+                data: alertsData,
+                borderColor: '#ff0055',
+                backgroundColor: 'rgba(255, 0, 85, 0.1)',
+                borderWidth: 3,
+                tension: 0.4,
+                fill: true,
+                pointBackgroundColor: '#ff0055',
+                pointRadius: 4,
+                pointHoverRadius: 6
+            }]
+        },
+        options: commonOptions
+    });
+    
+    // Duration Chart
+    new Chart(document.getElementById('durationChart'), {
+        type: 'bar',
+        data: {
+            labels: dates,
+            datasets: [{
+                data: durations,
+                backgroundColor: 'rgba(0, 212, 255, 0.2)',
+                borderColor: '#00d4ff',
+                borderWidth: 2,
+                borderRadius: 5,
+                barThickness: 15
+            }]
+        },
+        options: commonOptions
+    });
+    
+    // Metrics Chart
+    new Chart(document.getElementById('metricsChart'), {
+        type: 'doughnut',
+        data: {
+            labels: ['Eye Aspect Ratio', 'Mouth Aspect Ratio'],
+            datasets: [{
+                data: [{{ avg_ear|default:0 }}, {{ avg_mar|default:0 }}],
+                backgroundColor: ['#00ff88', '#00f2ff'],
+                borderColor: 'rgba(255, 255, 255, 0.05)',
+                borderWidth: 4,
+                hoverOffset: 20
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '80%',
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: { color: '#94a3b8', padding: 20, usePointStyle: true, font: { size: 11, weight: '600' } }
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

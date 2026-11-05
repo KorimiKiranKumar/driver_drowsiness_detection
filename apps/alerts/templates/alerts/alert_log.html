@@ -1,0 +1,276 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Neural Alert Registry - Drowsiness AI{% endblock %}
+
+{% block content %}
+<div class="container py-5 animate-up">
+    <!-- Page Header -->
+    <div class="page-header mb-5">
+        <h2>Neural Alert Registry</h2>
+        <p>Comprehensive historical ledger of AI-triggered safety interventions and biometric breaches.</p>
+        <div class="mt-4">
+            <a href="{% url 'alerts:alerts' %}" class="btn btn-outline-primary">
+                <i class="fas fa-cog me-2"></i>Calibrate AI
+            </a>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row g-4 mb-5">
+        <div class="col-xl-3 col-md-6">
+            <div class="stat-card p-4">
+                <div class="stat-icon bg-warning mb-3">
+                    <i class="fas fa-bell"></i>
+                </div>
+                <h3 class="fw-bold mb-1">{{ total_alerts|default:0 }}</h3>
+                <p class="text-muted text-uppercase small mb-0">Total Logged</p>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="stat-card p-4">
+                <div class="stat-icon bg-danger mb-3">
+                    <i class="fas fa-radiation"></i>
+                </div>
+                <h3 class="fw-bold mb-1">{{ critical_alerts|default:0 }}</h3>
+                <p class="text-muted text-uppercase small mb-0">Critical Breach</p>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="stat-card p-4">
+                <div class="stat-icon bg-success mb-3">
+                    <i class="fas fa-check-double"></i>
+                </div>
+                <h3 class="fw-bold mb-1">{{ acknowledged_alerts|default:0 }}</h3>
+                <p class="text-muted text-uppercase small mb-0">Resolved</p>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="stat-card p-4">
+                <div class="stat-icon bg-info mb-3">
+                    <i class="fas fa-calendar-day"></i>
+                </div>
+                <h3 class="fw-bold mb-1">{{ today_alerts|default:0 }}</h3>
+                <p class="text-muted text-uppercase small mb-0">Active Cycle</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter & List Section -->
+    <div class="row g-4">
+        <!-- Filter -->
+        <div class="col-lg-3">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-filter text-primary me-2"></i>Filter Registry
+                </div>
+                <div class="card-body">
+                    <form method="get">
+                        <div class="mb-4">
+                            <label class="form-label text-muted small uppercase mb-2">Neural Severity</label>
+                            <select class="form-select" name="severity">
+                                <option value="">All Thresholds</option>
+                                <option value="low" {% if request.GET.severity == 'low' %}selected{% endif %}>Low Impact</option>
+                                <option value="medium" {% if request.GET.severity == 'medium' %}selected{% endif %}>Medium Alert</option>
+                                <option value="high" {% if request.GET.severity == 'high' %}selected{% endif %}>High Drowsiness</option>
+                                <option value="critical" {% if request.GET.severity == 'critical' %}selected{% endif %}>Critical Intervention</option>
+                            </select>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label text-muted small uppercase mb-2">Temporal Start</label>
+                            <input type="date" class="form-control" name="date_from" value="{{ request.GET.date_from }}">
+                        </div>
+                        <div class="mb-5">
+                            <label class="form-label text-muted small uppercase mb-2">Temporal End</label>
+                            <input type="date" class="form-control" name="date_to" value="{{ request.GET.date_to }}">
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">
+                            Sync Registry
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- List -->
+        <div class="col-lg-9">
+            <div class="card">
+                <div class="card-header registry-header d-flex justify-content-between align-items-center">
+                    <span><i class="fas fa-history text-primary me-2"></i>Neural Events</span>
+                    <span class="badge bg-primary rounded-pill px-3">{{ alerts|length }} Records</span>
+                </div>
+                <div class="card-body p-0">
+                    {% if alerts %}
+                    <div class="table-responsive">
+                        <table class="table mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Temporal Stamp</th>
+                                    <th>Neural State</th>
+                                    <th>Signature</th>
+                                    <th>Core Message</th>
+                                    <th class="text-end">Command</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for alert in alerts %}
+                                <tr class="align-middle">
+                                    <td>
+                                        <div class="d-flex flex-column">
+                                            <span class="fw-bold">{{ alert.timestamp|date:"M d, Y" }}</span>
+                                            <small class="text-muted">{{ alert.timestamp|date:"H:i:s" }}</small>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {% if alert.severity == 'critical' %}
+                                        <span class="badge bg-danger">Critical</span>
+                                        {% elif alert.severity == 'high' %}
+                                        <span class="badge bg-warning text-dark">High</span>
+                                        {% elif alert.severity == 'medium' %}
+                                        <span class="badge bg-info">Medium</span>
+                                        {% else %}
+                                        <span class="badge bg-secondary">Low</span>
+                                        {% endif %}
+                                    </td>
+                                    <td><span class="text-primary fw-bold">{{ alert.get_alert_type_display }}</span></td>
+                                    <td class="text-truncate" style="max-width: 200px;">{{ alert.message }}</td>
+                                    <td class="text-end">
+                                        <div class="d-flex justify-content-end gap-2">
+                                            {% if not alert.acknowledged %}
+                                            <button class="btn btn-icon btn-outline-success acknowledge-btn" data-alert-id="{{ alert.id }}" title="Resolve">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                            {% endif %}
+                                            <button class="btn btn-icon btn-outline-primary view-btn" data-alert-id="{{ alert.id }}" title="Inspect">
+                                                <i class="fas fa-expand-alt"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <div class="stat-icon bg-success mx-auto mb-4" style="width: 80px; height: 80px; font-size: 2rem;">
+                            <i class="fas fa-shield-check"></i>
+                        </div>
+                        <h4 class="mb-2">Registry Void</h4>
+                        <p class="text-muted">No safety incidents logged. Operations are within nominal parameters.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Premium Detail Modal -->
+<div class="modal fade" id="alertDetailModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-atom text-primary me-2"></i>Neural Detail Analysis
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="alertDetailBody">
+                <!-- Dynamic Content -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary w-100" data-bs-dismiss="modal">Close Inspection</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Acknowledge alert logic
+    document.querySelectorAll('.acknowledge-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const alertId = this.dataset.alertId;
+            const btn = this;
+            
+            fetch(`/alerts/acknowledge/${alertId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    btn.classList.replace('btn-outline-success', 'btn-success');
+                    btn.innerHTML = '<i class="fas fa-check-double"></i>';
+                    btn.disabled = true;
+                    setTimeout(() => {
+                        const row = btn.closest('tr');
+                        row.style.opacity = '0.5';
+                        btn.remove();
+                    }, 1000);
+                }
+            });
+        });
+    });
+    
+    // View alert details logic
+    document.querySelectorAll('.view-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const alertId = this.dataset.alertId;
+            
+            fetch(`/alerts/detail/${alertId}/`)
+            .then(response => response.json())
+            .then(data => {
+                const severityColors = {
+                    'critical': 'danger',
+                    'high': 'warning',
+                    'medium': 'info',
+                    'low': 'secondary'
+                };
+                const color = severityColors[data.severity] || 'primary';
+                
+                document.getElementById('alertDetailBody').innerHTML = `
+                    <div class="d-flex align-items-center mb-4">
+                        <div class="stat-icon bg-${color} me-3" style="width: 50px; height: 50px;">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-0 text-uppercase fw-bold text-${color}">${data.severity} Severity</h6>
+                            <small class="text-muted">${data.timestamp}</small>
+                        </div>
+                    </div>
+                    <div class="metric-card p-4 mb-4">
+                        <label class="text-muted small uppercase mb-2 d-block">System Log</label>
+                        <p class="mb-0 lead fw-bold text-white">${data.message}</p>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <div class="metric-card p-3">
+                                <small class="text-muted uppercase d-block mb-1">Signal Type</small>
+                                <span class="fw-bold">${data.alert_type}</span>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="metric-card p-3">
+                                <small class="text-muted uppercase d-block mb-1">Cycle ID</small>
+                                <span class="fw-bold">#${data.session_id || 'AUTO'}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                const modal = new bootstrap.Modal(document.getElementById('alertDetailModal'));
+                modal.show();
+            });
+        });
+    });
+</script>
+{% endblock %}

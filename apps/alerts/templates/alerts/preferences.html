@@ -1,0 +1,313 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Alert Intelligence - Drowsiness AI{% endblock %}
+
+{% block content %}
+<div class="container py-5 animate-up">
+    <!-- Page Header -->
+    <div class="page-header mb-5">
+        <h2>Alert Intelligence</h2>
+        <p>Calibrate your neural safety thresholds and customize corrective feedback modules.</p>
+        <div class="mt-4">
+            <a href="{% url 'detection:dashboard' %}" class="btn btn-outline-primary">
+                <i class="fas fa-arrow-left me-2"></i>Return to Hub
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Alert Settings -->
+        <div class="col-lg-8">
+            <div class="card h-100">
+                <div class="card-header">
+                    <i class="fas fa-microchip text-primary me-2"></i>Neural Threshold Configuration
+                </div>
+                
+                <div class="card-body">
+                    <form method="post" action="{% url 'alerts:alerts' %}">
+                        {% csrf_token %}
+                        
+                        {% if messages %}
+                        {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"></button>
+                        </div>
+                        {% endfor %}
+                        {% endif %}
+                        
+                        <!-- Sound Alerts -->
+                        <div class="settings-section mb-5">
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <div>
+                                    <h6 class="mb-1 fw-bold">Acoustic Warning System</h6>
+                                    <p class="text-muted small mb-0">Audio-based corrective feedback for critical fatigue.</p>
+                                </div>
+                                <div class="form-check form-switch custom-switch">
+                                    <input class="form-check-input" type="checkbox" id="sound_enabled" name="sound_enabled" 
+                                           {% if preferences.sound_enabled %}checked{% endif %}>
+                                </div>
+                            </div>
+                            <div class="row g-4 transition-fade" id="soundSettings">
+                                <div class="col-md-6">
+                                    <label class="form-label text-muted small uppercase mb-2">Acoustic Gain</label>
+                                    <div class="d-flex align-items-center gap-3">
+                                        <input type="range" class="form-range" id="sound_volume" name="sound_volume" 
+                                               min="0" max="100" value="{{ preferences.sound_volume|default:80 }}">
+                                        <span class="badge bg-primary rounded-pill px-2 py-1">{{ preferences.sound_volume|default:80 }}%</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label text-muted small uppercase mb-2">Sonic Signature</label>
+                                    <select class="form-select" id="sound_type" name="sound_type">
+                                        <option value="beep" {% if preferences.sound_type == 'beep' %}selected{% endif %}>Digital Pulse</option>
+                                        <option value="alarm" {% if preferences.sound_type == 'alarm' %}selected{% endif %}>Critical Alarm</option>
+                                        <option value="chime" {% if preferences.sound_type == 'chime' %}selected{% endif %}>Neural Chime</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <hr class="my-5 border-white border-opacity-5">
+                        
+                        <!-- Visual Alerts -->
+                        <div class="settings-section mb-5">
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <div>
+                                    <h6 class="mb-1 fw-bold">Optic Feedback Module</h6>
+                                    <p class="text-muted small mb-0">Peripheral visual alerts for early fatigue detection.</p>
+                                </div>
+                                <div class="form-check form-switch custom-switch">
+                                    <input class="form-check-input" type="checkbox" id="visual_enabled" name="visual_enabled" 
+                                           {% if preferences.visual_enabled %}checked{% endif %}>
+                                </div>
+                            </div>
+                            <div class="row g-4 transition-fade" id="visualSettings">
+                                <div class="col-md-6">
+                                    <label class="form-label text-muted small uppercase mb-2">Luminance Intensity</label>
+                                    <select class="form-select" id="visual_intensity" name="visual_intensity">
+                                        <option value="low" {% if preferences.visual_intensity == 'low' %}selected{% endif %}>Subtle Glow</option>
+                                        <option value="medium" {% if preferences.visual_intensity == 'medium' %}selected{% endif %}>Steady Pulse</option>
+                                        <option value="high" {% if preferences.visual_intensity == 'high' %}selected{% endif %}>High Contrast</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label text-muted small uppercase mb-2">Alert Chromacity</label>
+                                    <select class="form-select" id="visual_color" name="visual_color">
+                                        <option value="red" {% if preferences.visual_color == 'red' %}selected{% endif %}>Red Alert</option>
+                                        <option value="yellow" {% if preferences.visual_color == 'yellow' %}selected{% endif %}>Amber Caution</option>
+                                        <option value="orange" {% if preferences.visual_color == 'orange' %}selected{% endif %}>Safety Pulse</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <hr class="my-5 border-white border-opacity-5">
+                        
+                        <!-- Sensitivity -->
+                        <div class="settings-section mb-5">
+                            <h6 class="mb-4 fw-bold">AI Sensitivity Calibration</h6>
+                            <div class="row g-4">
+                                <div class="col-md-6">
+                                    <label class="form-label text-muted small uppercase mb-2">Core Sensitivity</label>
+                                    <div class="d-flex align-items-center gap-3">
+                                        <input type="range" class="form-range" id="drowsiness_threshold" name="drowsiness_threshold" 
+                                               min="0" max="100" value="{{ preferences.drowsiness_threshold|default:70 }}">
+                                        <span class="badge bg-info rounded-pill px-2 py-1">{{ preferences.drowsiness_threshold|default:70 }}%</span>
+                                    </div>
+                                    <small class="text-muted mt-2 d-block">Lower value increases AI detection rigor.</small>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label text-muted small uppercase mb-2">Decision Latency (Sec)</label>
+                                    <input type="number" class="form-control" 
+                                           id="alert_delay" name="alert_delay" min="0" max="30" value="{{ preferences.alert_delay|default:3 }}">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between align-items-center mt-5">
+                            <button type="button" class="btn btn-outline-primary" id="testAlertBtn">
+                                <i class="fas fa-bolt me-2"></i>Test Neural Feedback
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Apply Configuration
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Presets -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-layer-group text-primary me-2"></i>Intelligent Presets
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-3">
+                        <button class="btn btn-outline-primary text-start p-3 preset-btn" data-preset="silent">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-moon fs-4 me-3 text-info"></i>
+                                <div>
+                                    <div class="fw-bold">Silent Guardian</div>
+                                    <small class="text-muted">Visual alerts, zero acoustics.</small>
+                                </div>
+                            </div>
+                        </button>
+                        <button class="btn btn-outline-primary text-start p-3 preset-btn" data-preset="normal">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-shield-check fs-4 me-3 text-success"></i>
+                                <div>
+                                    <div class="fw-bold">Balanced Safety</div>
+                                    <small class="text-muted">Optimum for daily monitoring.</small>
+                                </div>
+                            </div>
+                        </button>
+                        <button class="btn btn-outline-primary text-start p-3 preset-btn" data-preset="aggressive">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-fire fs-4 me-3 text-danger"></i>
+                                <div>
+                                    <div class="fw-bold">Max Awareness</div>
+                                    <small class="text-muted">Instant and loud notifications.</small>
+                                </div>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Module Health -->
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-heartbeat text-primary me-2"></i>Module Health
+                </div>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between mb-2 small uppercase text-muted fw-bold">
+                            <span>Acoustic Sync</span>
+                            <span class="text-primary">{{ sound_alerts_percent|default:100 }}%</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar" style="width: {{ sound_alerts_percent|default:100 }}%"></div>
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between mb-2 small uppercase text-muted fw-bold">
+                            <span>Optic Engine</span>
+                            <span class="text-primary">94%</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar" style="width: 94%"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="d-flex justify-content-between mb-2 small uppercase text-muted fw-bold">
+                            <span>AI Accuracy</span>
+                            <span class="text-primary">99.2%</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar" style="width: 99.2%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .transition-fade {
+        transition: opacity 0.4s ease;
+    }
+    .custom-switch .form-check-input {
+        width: 3.5rem;
+        height: 1.75rem;
+        cursor: pointer;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Logic for toggles and range displays
+    const soundToggle = document.getElementById('sound_enabled');
+    const visualToggle = document.getElementById('visual_enabled');
+    const soundSettings = document.getElementById('soundSettings');
+    const visualSettings = document.getElementById('visualSettings');
+
+    function updateVis() {
+        soundSettings.style.opacity = soundToggle.checked ? '1' : '0.2';
+        soundSettings.style.pointerEvents = soundToggle.checked ? 'all' : 'none';
+        visualSettings.style.opacity = visualToggle.checked ? '1' : '0.2';
+        visualSettings.style.pointerEvents = visualToggle.checked ? 'all' : 'none';
+    }
+
+    soundToggle.addEventListener('change', updateVis);
+    visualToggle.addEventListener('change', updateVis);
+    updateVis();
+
+    document.getElementById('sound_volume').addEventListener('input', function() {
+        this.nextElementSibling.textContent = this.value + '%';
+    });
+    
+    document.getElementById('drowsiness_threshold').addEventListener('input', function() {
+        this.nextElementSibling.textContent = this.value + '%';
+    });
+
+    // Simulated Alert
+    document.getElementById('testAlertBtn').addEventListener('click', function() {
+        // Visual Feedback Simulation
+        const color = document.getElementById('visual_color').value;
+        const overlay = document.createElement('div');
+        overlay.style.cssText = `position:fixed;top:0;left:0;width:100%;height:100%;background:${color};opacity:0;z-index:9999;pointer-events:none;transition:opacity 0.2s;box-shadow: inset 0 0 100px rgba(0,0,0,0.5);`;
+        document.body.appendChild(overlay);
+        
+        setTimeout(() => overlay.style.opacity = '0.3', 50);
+        setTimeout(() => overlay.style.opacity = '0', 400);
+        setTimeout(() => overlay.remove(), 700);
+        
+        // Acoustic Feedback Simulation
+        if (soundToggle.checked) {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = ctx.createOscillator();
+            const gn = ctx.createGain();
+            osc.connect(gn); gn.connect(ctx.destination);
+            osc.frequency.value = 880;
+            gn.gain.value = document.getElementById('sound_volume').value / 200;
+            osc.start();
+            osc.stop(ctx.currentTime + 0.3);
+        }
+    });
+
+    // Presets Logic
+    document.querySelectorAll('.preset-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const preset = this.dataset.preset;
+            if(preset === 'silent') {
+                soundToggle.checked = false;
+                visualToggle.checked = true;
+                document.getElementById('drowsiness_threshold').value = 40;
+            } else if(preset === 'aggressive') {
+                soundToggle.checked = true;
+                visualToggle.checked = true;
+                document.getElementById('sound_volume').value = 100;
+                document.getElementById('drowsiness_threshold').value = 85;
+                document.getElementById('alert_delay').value = 1;
+            } else {
+                soundToggle.checked = true;
+                visualToggle.checked = true;
+                document.getElementById('sound_volume').value = 75;
+                document.getElementById('drowsiness_threshold').value = 70;
+                document.getElementById('alert_delay').value = 3;
+            }
+            updateVis();
+            // Update labels
+            document.getElementById('sound_volume').dispatchEvent(new Event('input'));
+            document.getElementById('drowsiness_threshold').dispatchEvent(new Event('input'));
+        });
+    });
+</script>
+{% endblock %}

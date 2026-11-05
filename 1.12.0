@@ -1,0 +1,19 @@
+Collecting Django==5.0.2
+  Using cached Django-5.0.2-py3-none-any.whl.metadata (4.1 kB)
+Collecting channels==4.0.0
+  Using cached channels-4.0.0-py3-none-any.whl.metadata (1.5 kB)
+Collecting daphne==4.0.0
+  Using cached daphne-4.0.0-py3-none-any.whl.metadata (6.4 kB)
+Collecting opencv-python==4.9.0.80
+  Using cached opencv_python-4.9.0.80-cp37-abi3-win_amd64.whl.metadata (20 kB)
+Collecting numpy
+  Using cached numpy-2.4.4-cp314-cp314-win_amd64.whl.metadata (6.6 kB)
+Collecting scipy
+  Downloading scipy-1.17.1-cp314-cp314-win_amd64.whl.metadata (60 kB)
+Collecting Pillow==10.2.0
+  Downloading pillow-10.2.0.tar.gz (46.2 MB)
+     ---------------------------------------- 46.2/46.2 MB 773.2 kB/s  0:00:53
+  Installing build dependencies: started
+  Installing build dependencies: finished with status 'done'
+  Getting requirements to build wheel: started
+  Getting requirements to build wheel: finished with status 'error'

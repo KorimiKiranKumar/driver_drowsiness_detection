@@ -1,0 +1,84 @@
+{% load static %}
+
+<!-- Navigation Bar -->
+<nav class="navbar navbar-expand-lg sticky-top">
+    <div class="container">
+        <!-- LOGO -->
+        <a class="navbar-brand d-flex align-items-center" href="{% url 'detection:dashboard' %}">
+            <div class="brand-icon me-2">
+                <i class="fas fa-eye"></i>
+            </div>
+            <span>DROWSINESS <span class="text-primary">AI</span></span>
+        </a>
+
+        <!-- TOGGLE BUTTON -->
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <!-- NAV ITEMS -->
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <!-- LEFT MENU -->
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'detection:dashboard' %}">
+                        <i class="fas fa-tachometer-alt me-1"></i> Dashboard
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'detection:monitor' %}">
+                        <i class="fas fa-video me-1"></i> Monitor
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'detection:results' %}">
+                        <i class="fas fa-history me-1"></i> History
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'reports:reports' %}">
+                        <i class="fas fa-file-invoice me-1"></i> Reports
+                    </a>
+                </li>
+            </ul>
+
+            <!-- RIGHT MENU -->
+            <ul class="navbar-nav align-items-center">
+                {% if user.is_authenticated %}
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" data-bs-toggle="dropdown">
+                        <div class="user-avatar me-2">
+                            <i class="fas fa-user-shield text-primary"></i>
+                        </div>
+                        <span class="fw-bold">{{ user.username }}</span>
+                    </a>
+
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li>
+                            <a class="dropdown-item" href="{% url 'accounts:profile' %}">
+                                <i class="fas fa-user-circle me-2"></i> My Profile
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <a class="dropdown-item text-danger" href="{% url 'accounts:logout' %}">
+                                <i class="fas fa-power-off me-2"></i> Logout
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                {% else %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'accounts:login' %}">Login</a>
+                </li>
+                <li class="nav-item">
+                    <a class="btn btn-primary ms-lg-3" href="{% url 'accounts:register' %}">Get Started</a>
+                </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</nav>

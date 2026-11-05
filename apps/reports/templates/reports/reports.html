@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Neural Reports - Drowsiness AI{% endblock %}
+
+{% block content %}
+<div class="container py-5 animate-up">
+    <!-- Page Header -->
+    <div class="page-header mb-5">
+        <h2>Neural Reports</h2>
+        <p>Comprehensive logs and AI intelligence gathered from your driving sessions.</p>
+        <div class="mt-4 d-flex justify-content-center gap-3">
+            <a href="{% url 'reports:charts' %}" class="btn btn-outline-primary">
+                <i class="fas fa-chart-line me-2"></i>Global Analytics
+            </a>
+            <a href="{% url 'detection:monitor' %}" class="btn btn-primary">
+                <i class="fas fa-video me-2"></i>Start Session
+            </a>
+        </div>
+    </div>
+    
+    <!-- Statistics Cards -->
+    <div class="row g-4 mb-5">
+        <div class="col-xl-4 col-md-6">
+            <div class="stat-card p-4">
+                <div class="stat-icon bg-primary mb-3">
+                    <i class="fas fa-car-side"></i>
+                </div>
+                <h3 class="fw-bold mb-1">{{ total_sessions }}</h3>
+                <p class="text-muted text-uppercase small mb-0">Total Sessions</p>
+            </div>
+        </div>
+        
+        <div class="col-xl-4 col-md-6">
+            <div class="stat-card p-4">
+                <div class="stat-icon bg-success mb-3">
+                    <i class="fas fa-shield-check"></i>
+                </div>
+                <h3 class="fw-bold mb-1">{{ completed_sessions }}</h3>
+                <p class="text-muted text-uppercase small mb-0">Safe Sessions</p>
+            </div>
+        </div>
+        
+        <div class="col-xl-4 col-md-6">
+            <div class="stat-card p-4">
+                <div class="stat-icon bg-info mb-3">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <h3 class="fw-bold mb-1">{{ total_duration|floatformat:0 }}s</h3>
+                <p class="text-muted text-uppercase small mb-0">Active Monitor Time</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Sessions List -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header registry-header d-flex justify-content-between align-items-center">
+                    <span><i class="fas fa-database text-primary me-2"></i>Intelligent Log Registry</span>
+                    <span class="badge bg-primary rounded-pill px-3">{{ sessions|length }} Sessions Recorded</span>
+                </div>
+                
+                <div class="card-body p-0">
+                    {% if sessions %}
+                    <div class="table-responsive">
+                        <table class="table mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Session ID</th>
+                                    <th>Timeline</th>
+                                    <th>Duration</th>
+                                    <th>Blinks</th>
+                                    <th>Alerts</th>
+                                    <th>Status</th>
+                                    <th class="text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for session in sessions %}
+                                <tr>
+                                    <td class="fw-bold">#{{ session.id }}</td>
+                                    <td>
+                                        <div class="d-flex flex-column">
+                                            <span>{{ session.start_time|date:"M d, Y" }}</span>
+                                            <small class="text-muted">{{ session.start_time|date:"H:i" }}</small>
+                                        </div>
+                                    </td>
+                                    <td>{{ session.duration|floatformat:0 }}s</td>
+                                    <td>
+                                        <span class="badge bg-primary">{{ session.blink_count|default:0 }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge {% if session.total_alerts_triggered > 0 %}bg-danger{% else %}bg-success{% endif %}">
+                                            {{ session.total_alerts_triggered|default:0 }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if session.status == 'ACTIVE' %}
+                                        <span class="text-warning small"><i class="fas fa-spinner fa-spin me-1"></i>Live</span>
+                                        {% else %}
+                                        <span class="text-success small"><i class="fas fa-check-double me-1"></i>Archived</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end">
+                                        <a href="{% url 'reports:session_report' session.id %}" class="btn btn-outline-primary btn-sm">
+                                            Deep View
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <div class="stat-icon bg-primary mx-auto mb-4" style="width: 80px; height: 80px; font-size: 2rem;">
+                            <i class="fas fa-folder-open"></i>
+                        </div>
+                        <h5 class="mb-3">Log Registry Empty</h5>
+                        <p class="text-muted mb-4">You haven't recorded any sessions yet. Safety data will appear here.</p>
+                        <a href="{% url 'detection:monitor' %}" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>New Data Entry
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

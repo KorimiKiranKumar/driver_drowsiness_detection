@@ -1,0 +1,303 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Neural Session Report - Drowsiness AI{% endblock %}
+
+{% block content %}
+<div class="container py-5 animate-up">
+    <!-- Page Header -->
+    <div class="page-header mb-5 text-start">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h2>Intelligence Report</h2>
+                <p class="mb-0 text-primary fw-bold">Session #{{ session.id }}</p>
+                <p class="text-muted small">{{ session.start_time|date:"M d, Y" }} at {{ session.start_time|date:"H:i" }}</p>
+            </div>
+            <a href="{% url 'reports:reports' %}" class="btn btn-outline-primary">
+                <i class="fas fa-arrow-left me-2"></i>Back to Logs
+            </a>
+        </div>
+    </div>
+    
+    <!-- Key Metrics Row -->
+    <div class="row g-4 mb-5">
+        <div class="col-xl-2 col-md-4">
+            <div class="stat-card p-3 h-100 text-center">
+                <div class="stat-icon bg-primary mb-2 mx-auto" style="width: 40px; height: 40px; font-size: 1rem;">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <h4 class="mb-0 fw-bold">{{ report.total_duration_seconds|floatformat:0 }}s</h4>
+                <small class="text-muted text-uppercase smaller">Duration</small>
+            </div>
+        </div>
+        <div class="col-xl-2 col-md-4">
+            <div class="stat-card p-3 h-100 text-center">
+                <div class="stat-icon bg-info mb-2 mx-auto" style="width: 40px; height: 40px; font-size: 1rem;">
+                    <i class="fas fa-microchip"></i>
+                </div>
+                <h4 class="mb-0 fw-bold">{{ report.total_frames_processed|default:0 }}</h4>
+                <small class="text-muted text-uppercase smaller">Frames</small>
+            </div>
+        </div>
+        <div class="col-xl-2 col-md-4">
+            <div class="stat-card p-3 h-100 text-center">
+                <div class="stat-icon bg-success mb-2 mx-auto" style="width: 40px; height: 40px; font-size: 1rem;">
+                    <i class="fas fa-eye"></i>
+                </div>
+                <h4 class="mb-0 fw-bold">{{ report.total_blinks|default:0 }}</h4>
+                <small class="text-muted text-uppercase smaller">Blinks</small>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="stat-card p-3 h-100 text-center">
+                <div class="stat-icon bg-warning mb-2 mx-auto" style="width: 40px; height: 40px; font-size: 1rem;">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <h4 class="mb-0 fw-bold">{{ report.total_drowsy_events|default:0 }}</h4>
+                <small class="text-muted text-uppercase smaller">Fatigue Events</small>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="stat-card p-3 h-100 text-center">
+                <div class="stat-icon bg-danger mb-2 mx-auto" style="width: 40px; height: 40px; font-size: 1rem;">
+                    <i class="fas fa-bell"></i>
+                </div>
+                <h4 class="mb-0 fw-bold">{{ report.total_alerts_triggered|default:0 }}</h4>
+                <small class="text-muted text-uppercase smaller">Alerts Triggered</small>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row g-4">
+        <!-- Biometric Performance -->
+        <div class="col-lg-7">
+            <div class="card h-100">
+                <div class="card-header">
+                    <i class="fas fa-dna text-primary me-2"></i>Biometric Core Metrics
+                </div>
+                <div class="card-body">
+                    <div class="mb-5">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div>
+                                <h6 class="mb-1">Eye Aspect Ratio (EAR)</h6>
+                                <p class="text-muted small mb-0">Average alertness coefficient</p>
+                            </div>
+                            <div class="text-end">
+                                <h4 class="text-primary mb-0">{{ report.average_ear|floatformat:3 }}</h4>
+                                <small class="text-muted uppercase smaller">Optimum: 0.25+</small>
+                            </div>
+                        </div>
+                        <div class="progress mb-3">
+                            <div class="progress-bar" style="width: {% widthratio report.average_ear 1 200 %}%"></div>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <div class="metric-card p-2">
+                                    <small class="text-muted d-block smaller">MIN VAL</small>
+                                    <span class="text-danger fw-bold">{{ report.min_ear|floatformat:3 }}</span>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="metric-card p-2">
+                                    <small class="text-muted d-block smaller">MAX VAL</small>
+                                    <span class="text-success fw-bold">{{ report.max_ear|floatformat:3 }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div>
+                                <h6 class="mb-1">Mouth Aspect Ratio (MAR)</h6>
+                                <p class="text-muted small mb-0">Oral fatigue/Yawn detection</p>
+                            </div>
+                            <div class="text-end">
+                                <h4 class="text-info mb-0">{{ report.average_mar|floatformat:3 }}</h4>
+                                <small class="text-muted uppercase smaller">Limit: 0.60</small>
+                            </div>
+                        </div>
+                        <div class="progress mb-3">
+                            <div class="progress-bar bg-info" style="width: {% widthratio report.average_mar 1 100 %}%"></div>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <div class="metric-card p-2">
+                                    <small class="text-muted d-block smaller">MIN VAL</small>
+                                    <span class="text-success fw-bold">{{ report.min_mar|floatformat:3 }}</span>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="metric-card p-2">
+                                    <small class="text-muted d-block smaller">MAX VAL</small>
+                                    <span class="text-danger fw-bold">{{ report.max_mar|floatformat:3 }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Behavior Distribution -->
+        <div class="col-lg-5">
+            <div class="card h-100">
+                <div class="card-header registry-header">
+                    <i class="fas fa-user-check text-warning me-2"></i>Behavioral Analysis
+                </div>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <label class="text-muted small uppercase mb-3 d-block">Neural State Distribution</label>
+                        
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="fw-bold small">Optimal Vigilance</span>
+                                <span class="text-success small fw-bold">{{ report.normal_frames }} <small class="text-muted">Frames</small></span>
+                            </div>
+                            <div class="progress" style="height: 6px;">
+                                <div class="progress-bar bg-success shadow-glow" style="width: 85%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="fw-bold small">Fatigue Warning</span>
+                                <span class="text-warning small fw-bold">{{ report.medium_drowsy_frames }} <small class="text-muted">Frames</small></span>
+                            </div>
+                            <div class="progress" style="height: 6px;">
+                                <div class="progress-bar bg-warning shadow-glow" style="width: 12%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="fw-bold small">Critical Intervention</span>
+                                <span class="text-danger small fw-bold">{{ report.high_drowsy_frames }} <small class="text-muted">Frames</small></span>
+                            </div>
+                            <div class="progress" style="height: 6px;">
+                                <div class="progress-bar bg-danger shadow-glow" style="width: 3%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pt-3 border-top border-white border-opacity-5">
+                        <label class="text-muted small uppercase mb-3 d-block">Spatial Orientation History</label>
+                        <div class="row g-2">
+                            <div class="col">
+                                <div class="metric-card p-2 text-center">
+                                    <div class="stat-icon-mini bg-primary mx-auto mb-2">
+                                        <i class="fas fa-arrows-alt-v"></i>
+                                    </div>
+                                    <h5 class="fw-bold mb-0 text-white">{{ report.head_straight_count }}</h5>
+                                    <small class="text-muted smaller">Center</small>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="metric-card p-2 text-center">
+                                    <div class="stat-icon-mini bg-secondary mx-auto mb-2">
+                                        <i class="fas fa-arrow-up"></i>
+                                    </div>
+                                    <h5 class="fw-bold mb-0 text-white">{{ report.head_up_count }}</h5>
+                                    <small class="text-muted smaller">Up</small>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="metric-card p-2 text-center">
+                                    <div class="stat-icon-mini bg-secondary mx-auto mb-2">
+                                        <i class="fas fa-arrow-left"></i>
+                                    </div>
+                                    <h5 class="fw-bold mb-0 text-white">{{ report.head_left_count }}</h5>
+                                    <small class="text-muted smaller">Left</small>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="metric-card p-2 text-center">
+                                    <div class="stat-icon-mini bg-secondary mx-auto mb-2">
+                                        <i class="fas fa-arrow-right"></i>
+                                    </div>
+                                    <h5 class="fw-bold mb-0 text-white">{{ report.head_right_count }}</h5>
+                                    <small class="text-muted smaller">Right</small>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="metric-card p-2 text-center">
+                                    <div class="stat-icon-mini bg-danger mx-auto mb-2">
+                                        <i class="fas fa-arrow-down"></i>
+                                    </div>
+                                    <h5 class="fw-bold mb-0 text-danger">{{ report.head_down_count }}</h5>
+                                    <small class="text-muted smaller">Down</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Event Timeline -->
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header registry-header">
+                    <i class="fas fa-history text-info me-2"></i>Neural Event Timeline
+                </div>
+                <div class="card-body">
+                    {% if drowsiness_events %}
+                    <div class="timeline">
+                        {% for event in drowsiness_events %}
+                        <div class="timeline-item d-flex gap-4 p-3 mb-3">
+                            <div class="timeline-marker bg-{% if event.severity|stringformat:'s' == 'HIGH' %}danger{% elif event.severity|stringformat:'s' == 'MEDIUM' %}warning{% else %}info{% endif %}">
+                                <i class="fas fa-bolt"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <h6 class="mb-0 fw-bold">{{ event.severity }} Drowsiness Event</h6>
+                                    <span class="badge bg-dark-glow">{{ event.timestamp|date:"H:i:s" }}</span>
+                                </div>
+                                <p class="text-muted small mb-0">Biometric threshold breach detected by AI engine. Corrective feedback provided.</p>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <div class="stat-icon bg-success mx-auto mb-4" style="width: 80px; height: 80px; font-size: 2rem;">
+                            <i class="fas fa-shield-check"></i>
+                        </div>
+                        <h4 class="mb-2">Flawless Operation</h4>
+                        <p class="text-muted">No safety breaches detected during this monitoring cycle.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .timeline-item {
+        background: rgba(255, 255, 255, 0.02);
+        border-radius: 15px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        transition: all 0.3s ease;
+    }
+    .timeline-item:hover {
+        background: rgba(255, 255, 255, 0.05);
+        transform: translateX(5px);
+    }
+    .timeline-marker {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        box-shadow: 0 0 15px currentColor;
+    }
+    .bg-dark-glow {
+        background: rgba(0, 0, 0, 0.3);
+        color: var(--primary);
+        border: 1px solid var(--primary-glow);
+    }
+</style>
+{% endblock %}

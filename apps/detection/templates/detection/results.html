@@ -1,0 +1,208 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Session Analysis - Drowsiness AI{% endblock %}
+
+{% block content %}
+<div class="container py-5 animate-up">
+    <!-- Page Header -->
+    <div class="page-header mb-5">
+        <h2>Session Analysis</h2>
+        <p>Review the performance and safety metrics from your latest AI monitoring session.</p>
+        <div class="mt-4">
+            <a href="{% url 'detection:monitor' %}" class="btn btn-primary">
+                <i class="fas fa-video me-2"></i>New Monitoring Session
+            </a>
+        </div>
+    </div>
+
+    {% if session %}
+    <div class="row g-4">
+        <!-- Left: Session Details -->
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header d-flex align-items-center">
+                    <i class="fas fa-fingerprint text-primary me-2"></i>
+                    <span>Session Intelligence #{{ session.id }}</span>
+                </div>
+                <div class="card-body">
+                    <div class="row g-4">
+                        <div class="col-md-4">
+                            <div class="metric-card">
+                                <h6>Timestamp</h6>
+                                <h4>{{ session.start_time|date:"H:i:s" }}</h4>
+                                <small class="text-muted">{{ session.start_time|date:"M d, Y" }}</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="metric-card">
+                                <h6>Total Blinks</h6>
+                                <h4 class="text-primary">{{ blink_count }}</h4>
+                                <small class="text-muted">Detected Events</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="metric-card">
+                                <h6>Drowsy Alerts</h6>
+                                <h4 class="text-danger">{{ drowsy_count }}</h4>
+                                <small class="text-muted">Critical Warnings</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- History Table -->
+            <div class="card">
+                <div class="card-header registry-header">
+                    <i class="fas fa-history text-primary me-2"></i>
+                    <span>Recent Session Logs</span>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table mb-0">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Date</th>
+                                    <th>Blinks</th>
+                                    <th>Alerts</th>
+                                    <th>Status</th>
+                                    <th class="text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for s in sessions %}
+                                <tr class="{% if session and s.id == session.id %}active-row{% endif %}">
+                                    <td class="fw-bold">#{{ s.id }}</td>
+                                    <td>{{ s.start_time|date:"M d, H:i" }}</td>
+                                    <td><span class="badge bg-primary">{{ s.blink_count|default:0 }}</span></td>
+                                    <td><span class="badge bg-danger">{{ s.drowsy_count|default:0 }}</span></td>
+                                    <td>
+                                        {% if s.end_time %}
+                                        <span class="text-success small"><i class="fas fa-check-circle me-1"></i>Completed</span>
+                                        {% else %}
+                                        <span class="text-warning small"><i class="fas fa-clock me-1"></i>In Progress</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end">
+                                        <a href="{% url 'reports:session_report' s.id %}" class="btn btn-outline-primary btn-sm">
+                                            Analytics
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center py-5 text-muted">No analysis available yet.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Visual Analytics -->
+        <div class="col-lg-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-chart-pie text-primary me-2"></i>
+                    <span>Safety Distribution</span>
+                </div>
+                <div class="card-body">
+                    <div style="height: 250px;">
+                        <canvas id="safetyChart"></canvas>
+                    </div>
+                    <div class="mt-4 pt-3 border-top border-white border-opacity-5">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="text-muted small">AI Accuracy</span>
+                            <span class="text-success fw-bold">99.4%</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar" style="width: 99.4%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="stat-icon bg-success me-3">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <div>
+                            <h6 class="text-muted mb-0 small uppercase">Safety Status</h6>
+                            <h5 class="mb-0 fw-bold">OPTIMAL</h5>
+                        </div>
+                    </div>
+                    <p class="text-muted small mb-0">Your monitoring session indicates high alert levels. Keep up the safe driving habits!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% else %}
+    <!-- Empty State -->
+    <div class="row justify-content-center">
+        <div class="col-md-6 text-center">
+            <div class="card p-5">
+                <div class="stat-icon bg-primary mx-auto mb-4" style="width: 80px; height: 80px; font-size: 2rem;">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <h4 class="mb-3">Neural Link Required</h4>
+                <p class="text-muted mb-4">No monitoring data found. Connect your camera to begin AI-powered drowsiness detection.</p>
+                <a href="{% url 'detection:monitor' %}" class="btn btn-primary">
+                    <i class="fas fa-bolt me-2"></i>Connect Now
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    .active-row {
+        background: rgba(0, 242, 255, 0.05) !important;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    {% if session %}
+    const ctx = document.getElementById('safetyChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Healthy Blinks', 'Alerts'],
+            datasets: [{
+                data: [{{ blink_count }}, {{ drowsy_count }}],
+                backgroundColor: ['#00f2ff', '#ff0055'],
+                borderColor: 'rgba(255, 255, 255, 0.05)',
+                borderWidth: 2,
+                hoverOffset: 15,
+                borderRadius: 5
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '80%',
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        color: '#94a3b8',
+                        padding: 20,
+                        usePointStyle: true,
+                        font: { size: 12, weight: '600' }
+                    }
+                }
+            }
+        }
+    });
+    {% endif %}
+</script>
+{% endblock %}
