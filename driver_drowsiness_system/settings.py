@@ -95,6 +95,11 @@ def configure_databases():
             import dj_database_url
             database_config = dj_database_url.parse(db_url, conn_max_age=600, conn_health_checks=True)
             if database_config.get('ENGINE') == 'django.db.backends.mysql':
+                # 'sys' is MySQL's internal system schema and denies CREATE TABLE.
+                # Auto-redirect to TiDB/MySQL's standard application database 'test'.
+                if database_config.get('NAME') in ('sys', 'information_schema', 'performance_schema', ''):
+                    database_config['NAME'] = 'test'
+
                 options = database_config.setdefault('OPTIONS', {})
                 options['charset'] = 'utf8mb4'
                 # PyMySQL requires 'ssl' to be a dict or SSLContext, not string 'ssl-mode'
@@ -107,7 +112,10 @@ def configure_databases():
 
     # 2. Check for individual MySQL environment variables (e.g. TiDB, Aiven, RDS)
     mysql_host = os.environ.get('MYSQL_HOST') or os.environ.get('DB_HOST')
-    mysql_db = os.environ.get('MYSQL_DATABASE') or os.environ.get('DB_NAME') or os.environ.get('MYSQL_DB')
+    raw_db = os.environ.get('MYSQL_DATABASE') or os.environ.get('DB_NAME') or os.environ.get('MYSQL_DB')
+    # Default to 'test' if unspecified or if mistakenly set to system schemas ('sys', etc.)
+    mysql_db = 'test' if (not raw_db or raw_db in ('sys', 'information_schema', 'performance_schema')) else raw_db
+
     if mysql_host:
         raw_port = os.environ.get('MYSQL_PORT') or os.environ.get('DB_PORT', '4000' if 'tidbcloud' in mysql_host else '3306')
         try:
@@ -122,7 +130,7 @@ def configure_databases():
         return {
             'default': {
                 'ENGINE': 'django.db.backends.mysql',
-                'NAME': mysql_db or 'sys',
+                'NAME': mysql_db,
                 'USER': os.environ.get('MYSQL_USER') or os.environ.get('DB_USER', 'root'),
                 'PASSWORD': os.environ.get('MYSQL_PASSWORD') or os.environ.get('DB_PASSWORD', ''),
                 'HOST': mysql_host,
